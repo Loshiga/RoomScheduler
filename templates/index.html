@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+ <title>Datastore and Firebase Auth Example</title>
+ <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+<link type="text/css" rel="stylesheet"
+href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+ <script src="{{ url_for('static', filename='script.js') }}"></script>
+ <link type="text/css" rel="stylesheet" href="{{ url_for('static',
+filename='style.css') }}">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="nav" id="nav">
+  <input type="checkbox" id="nav-check">
+  <div class="nav-header">
+    <div class="nav-title">
+      Room Schecduler
+    </div>
+  </div>
+  <div class="nav-btn">
+    <label for="nav-check">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+  </div>
+  {{ res }}
+  <div class="nav-links">
+    <a data-toggle="modal" data-target="#myModal">Add a room</a>
+    <a id="sign-out" hidden="true">Sign out</a>
+  </div>
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a Room</h4>
+        </div>
+        <div class="modal-body">
+          <form action = "/" method = "POST">
+           <p>Name <input type = "text" name = "name" /></p>
+           <p>Capacity <input type = "text" name = "capacity" /></p>
+
+           <p><input type = "submit" value = "submit" /></p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+   <div id="firebase-auth-container"></div>
+   <div id="login-info" hidden="true">
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<strong>Error!  {{ error }}</strong>
+</div>
+  {% endif %}
+   {% if user_data %}
+   <p>Hi <b>{{ user_data['name'] }} ( {{ user_data['email'] }} )</b></p>
+    {% endif %}
+   <div class="container">
+      <h2>Avaialable Rooms</h2>
+      <form class="example" action="/searchByRoom" style="width:90%">
+        <div class="form-group"><label >Search By Name:</label><input type="text" placeholder="Search Room Name.."  class="form-control" name="search" value='' style="display: inline;">
+        <button type="submit" class="btn btn-success" style="position:absolute">Go</button></div>
+      </form>
+      <form class="example2" action="/" style="width:90%">
+          <div class="form-group"><button type="submit" class="btn btn-success">All Rooms</button></div>
+      </form>
+      <table class="table table-striped">
+        <thead>
+          <tr >
+            <th style="text-align:center">Name</th>
+            <th style="text-align:center">Capacity</th>
+              <th style="text-align:center">Book</th>
+              <th style="text-align:center">Bookings</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if rooms %}
+
+            {% for room in rooms %}
+              <tr>
+                <td>{{ room['Name'] }}</td>
+                <td>{{ room['Capacity'] }}</td>
+                  <td><a href="/bookRoom?roomid={{ room['key']['name'] }}"<button type="button" class="btn btn-success">Book</button></a></td>
+                  <td><a href="/listBookings?roomid={{ room['key']['name'] }}"<button type="button" class="btn btn-success">List Bookings</button></a></td>
+              </tr>
+            {% endfor %}
+           {% endif %}
+        </tbody>
+      </table>
+      {% if bookings %}
+      <h2>Bookings List ( {{ roomid }} )</h2>
+      <form class="example1" action="/filterByDate" method="post" style="width:90%">
+        <div class="form-group">
+        <label >Date From:</label><input class="form-control" type = "date" id="txtDate5" name = "dateFrom" value="" style="display: inline;padding: 0px 12px;"></div>
+        <div class="form-group">
+        <label >Date To:</label><input class="form-control" type = "date" id="txtDate6" name = "dateTo" value="" style="display: inline;padding: 0px 12px;  "></div>
+        <input  class="form-control" type = "hidden" name = "roomid" value="{{ roomid }}">
+        <input  class="form-control" type = "hidden" name = "email" value="{{ user_data['email'] }}">
+        <div class="form-group">  <button type="submit" class="btn btn-success" style="position:absolute">Filter</button></div>
+      </form><br><br><br>
+   <table class="table table-striped">
+     <thead>
+       <tr >
+         <th style="text-align:center">DateIn</th>
+         <th style="text-align:center">DateOut</th>
+         <th style="text-align:center">BookedBy</th>
+         <th style="text-align:center">Actions</th>
+       </tr>
+     </thead>
+     <tbody>
+
+         {% for booking in bookings %}
+           <tr>
+             <td>{{ booking['DateIn'] }}</td>
+             <td>{{ booking['DateOut'] }}</td>
+             <td>{{ booking['UserEmail'] }}</td>
+             <td> {% if user_data['email'] == booking['UserEmail'] %}
+                      <a href="/deleteBooking?roomid={{ roomid }}&dateIn={{ booking['DateIn'] }}&dateOut={{ booking['DateOut'] }}&UserEmail={{ booking['UserEmail'] }}"<button type="button" class="btn btn-danger">Delete</button></a>
+                      <a href="/editBooking?roomid={{ roomid }}&dateIn={{ booking['DateIn'] }}&dateOut={{ booking['DateOut'] }}&UserEmail={{ booking['UserEmail'] }}"<button type="button" class="btn btn-warning">Edit</button></a>
+               {% else %}
+                      Not Permitted
+            {% endif %}</td>
+           </tr>
+         {% endfor %}
+     </tbody>
+   </table>
+   {% endif %}
+    </div>
+
+   </div>
+</body>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+<script src="{{ url_for('static', filename='app-setup.js') }}"></script>
+
+</html>

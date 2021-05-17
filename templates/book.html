@@ -1,0 +1,75 @@
+
+<!doctype html>
+<html>
+<head>
+ <title>Datastore and Firebase Auth Example</title>
+ <script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+<link type="text/css" rel="stylesheet"
+href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+ <script src="{{ url_for('static', filename='script.js') }}"></script>
+ <link type="text/css" rel="stylesheet" href="{{ url_for('static',
+filename='style.css') }}">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="nav" id="nav">
+  <input type="checkbox" id="nav-check">
+  <div class="nav-header">
+    <div class="nav-title">
+      Room Scheduler
+    </div>
+  </div>
+  <div class="nav-btn">
+    <label for="nav-check">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+  </div>
+
+  <div class="nav-links">
+    <a id="sign-out" hidden="true">Sign out</a>
+  </div>
+</div>
+   <div id="firebase-auth-container"></div>
+   <div id="login-info" hidden="true">
+
+   <div class="container">
+      <h2>Book Your Room</h2>
+      {% for room in rooms %}
+         {% if room['key']['name'] == roomid %}
+         <form action="/roomBookDB" method="POST">
+          <div class="form-group">
+          <label >Name:</label>
+          <input  class="form-control" type = "text" name = "name" value="{{ room['Name'] }}" disabled>
+          </div>
+          <div class="form-group">
+          <label >Capacity:</label>
+          <input  class="form-control" type = "text" name = "capacity" value="{{ room['Capacity'] }}" disabled>
+          </div>
+          <input  class="form-control" type = "hidden" name = "roomid" value="{{ roomid }}">
+          <div class="form-group">
+          <label >Date In:</label>
+          <input  class="form-control" type = "date" id="txtDate1" name = "dateIn" value="" >
+          </div>
+          <div class="form-group">
+          <label >Date Out:</label>
+          <input  class="form-control" type = "date" id="txtDate2" name = "dateOut" value="" >
+          </div>
+          <button type="submit" class="btn btn-default">Submit</button>
+          </form>
+
+           {% endif %}
+      {% endfor %}
+      </table>
+    </div>
+   </div>
+
+</body>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+<script src="{{ url_for('static', filename='app-setup.js') }}"></script>
+
+</html>
